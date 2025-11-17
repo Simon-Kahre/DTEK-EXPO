@@ -1,15 +1,13 @@
-typedef unsigned char uint8_t;
-
 extern void moveImage(volatile char *X,volatile int *Y, int sw);
 extern void updateTransform(int Switches);
 extern void print(const char*);
 extern void print_dec(unsigned int);
-extern const uint8_t Image[];
+extern const char Image[];
 
 typedef struct {
-    uint8_t r;
-    uint8_t g;
-    uint8_t b;
+    char r;
+    char g;
+    char b;
 } Pixel;
 
 volatile Pixel imageMatrix[2000][2000];
@@ -28,97 +26,110 @@ int get_sw()
 
 
 
-int is_whitespace(uint8_t c) {
+int is_whitespace(char c) {
     return (c==' ' || c=='\n' || c=='\r' || c=='\t');
 }
 
-int is_digit(uint8_t c) {
+int is_digit(char c) {
     return (c >= '0' && c <= '9');
 }
 
 // Safe PPM header parser with bounds checking
-uint8_t* skipPPMHeader(const uint8_t *ppm,
-                       int *width, int *height, int *maxval)
+char* skipPPMHeader(const char *ppm, int *width, int *height, int *maxval)
 {
     int i = 0;
-    int size = 2000000000;
-
-    if (size < 2) return 0;
 
     // Magic number
     if (ppm[i++] != 'P' || ppm[i++] != '6')
+    {
         return 0;
+    }
 
     // Skip whitespace
-    while (i < size && is_whitespace(ppm[i])) i++;
-    if (i >= size) return 0;
+    while (is_whitespace(ppm[i]))
+    {
+        i++;
+    }
 
     // Skip comments
-    while (i < size && ppm[i] == '#') {
-        while (i < size && ppm[i] != '\n') i++;  // skip line
-        if (i < size) i++;                       // skip newline
-        while (i < size && is_whitespace(ppm[i])) i++;
+    while (ppm[i] == '#')
+    {
+        while (ppm[i] != '\n')
+        {
+            i++;  // skip line
+        }
+
+        while (is_whitespace(ppm[i]))
+        {
+            i++;
+        }
     }
-    if (i >= size) return 0;
 
     // Read integer helper
     int value, found;
 
     // WIDTH
     value = 0; found = 0;
-    while (i < size && is_digit(ppm[i])) {
+    while (is_digit(ppm[i]))
+    {
         value = value * 10 + (ppm[i++] - '0');
         found = 1;
     }
+
     if (!found) return 0;
+
     *width = value;
-    while (i < size && is_whitespace(ppm[i])) i++;
+
+    while (is_whitespace(ppm[i]))
+    {
+        i++;
+    }
 
     // HEIGHT
     value = 0; found = 0;
-    while (i < size && is_digit(ppm[i])) {
+    while (is_digit(ppm[i]))
+    {
         value = value * 10 + (ppm[i++] - '0');
         found = 1;
     }
     if (!found) return 0;
+
     *height = value;
-    while (i < size && is_whitespace(ppm[i])) i++;
+
+    while (is_whitespace(ppm[i]))
+    {
+        i++;
+    }
 
     // MAXVAL
     value = 0; found = 0;
-    while (i < size && is_digit(ppm[i])) {
+    while (is_digit(ppm[i]))
+    {
         value = value * 10 + (ppm[i++] - '0');
         found = 1;
     }
+
     if (!found) return 0;
+
     *maxval = value;
-    while (i < size && is_whitespace(ppm[i])) i++;
 
-    if (i >= size) return 0;
+    while (is_whitespace(ppm[i]))
+    {
+        i++;
+    }
 
-    return (uint8_t*)&ppm[i];   // start of pixel data
+    return (char*)&ppm[i];   // start of pixel data
 }
 volatile Pixel imageMatrix[2000][2000];
 
 
 int main()
 {
-    print("Header bytes:\n");
-    for (int i = 0; i < 32; i++)
-    {
-        print_dec(Image[i]);
-        print(" ");
-    }
-    print("\n");
-    
     volatile char *VGA = (volatile char*) 0x08000000;
-    
 
     int w,h,mv;
-    int s = 0;
 
-    volatile uint8_t *rawImage = skipPPMHeader(Image, &w, &h, &mv);
-    s=s;
+    volatile char *rawImage = skipPPMHeader(Image, &w, &h, &mv);
 
     for (int i=0;i<w;i++)
     {
@@ -128,9 +139,6 @@ int main()
             imageMatrix[i][j].g = rawImage[(j * w + i) * 3+1];
             imageMatrix[i][j].b = rawImage[(j * w + i) * 3+2];
         }
-        print_dec(w);
-        print_dec(h);
-        print(" ");
     }
 
     for (int i = 0; i < 320; i++)
@@ -138,13 +146,9 @@ int main()
         for(int j = 0; j < h; j++)
         {
 
-            uint8_t r = imageMatrix[i][j].r;
-            uint8_t g = imageMatrix[i][j].g;
-            uint8_t b = imageMatrix[i][j].b;
-
-            /*uint8_t r = rawImage[i*3 + 0];
-            uint8_t g = rawImage[i*3 + 1];
-            uint8_t b = rawImage[i*3 + 2];*/
+            char r = imageMatrix[i][j].r;
+            char g = imageMatrix[i][j].g;
+            char b = imageMatrix[i][j].b;
 
             if (mv == 1) { // expand 0/1 to full 8-bit
                 r = r ? 255 : 0;
