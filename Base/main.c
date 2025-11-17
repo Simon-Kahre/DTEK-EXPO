@@ -10,7 +10,7 @@ typedef struct {
     char b;
 } Pixel;
 
-volatile Pixel imageMatrix[2000][2000];
+
 
 
 // Aquires status of all the switches on the board
@@ -23,8 +23,6 @@ int get_sw()
   
   return activeSwitches;
 }
-
-
 
 int is_whitespace(char c) {
     return (c==' ' || c=='\n' || c=='\r' || c=='\t');
@@ -120,9 +118,9 @@ char* skipPPMHeader(const char *ppm, int *width, int *height, int *maxval)
 
     return (char*)&ppm[i];   // start of pixel data
 }
-volatile Pixel imageMatrix[2000][2000];
 
 
+    
 int main()
 {
     volatile char *VGA = (volatile char*) 0x08000000;
@@ -131,10 +129,13 @@ int main()
 
     volatile char *rawImage = skipPPMHeader(Image, &w, &h, &mv);
 
-    for (int i=0;i<w;i++)
+    volatile Pixel imageMatrix[w][h];
+
+    for (int i = 0; i < w; i++)
     {
         for(int j = 0; j < h; j++)
         {
+
             imageMatrix[i][j].r = rawImage[(j * w + i) * 3];
             imageMatrix[i][j].g = rawImage[(j * w + i) * 3+1];
             imageMatrix[i][j].b = rawImage[(j * w + i) * 3+2];
