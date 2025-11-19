@@ -1,14 +1,16 @@
-extern void moveImage(volatile char *X,volatile int *Y, int sw);
-extern void updateTransform(int Switches);
-extern void print(const char*);
-extern void print_dec(unsigned int);
-extern const char Image[];
-
 typedef struct {
     char r;
     char g;
     char b;
 } Pixel;
+
+extern void moveImage(volatile char *X,volatile int *Y, int sw, int w, int h, volatile Pixel I[w][h]);
+extern void updateTransform(int Switches);
+extern void print(const char*);
+extern void print_dec(unsigned int);
+extern const char Image[];
+
+
 
 
 
@@ -139,13 +141,6 @@ int main()
             imageMatrix[i][j].r = rawImage[(j * w + i) * 3];
             imageMatrix[i][j].g = rawImage[(j * w + i) * 3+1];
             imageMatrix[i][j].b = rawImage[(j * w + i) * 3+2];
-        }
-    }
-
-    for (int i = 0; i < 320; i++)
-    {
-        for(int j = 0; j < h; j++)
-        {
 
             char r = imageMatrix[i][j].r;
             char g = imageMatrix[i][j].g;
@@ -157,7 +152,17 @@ int main()
                 b = b ? 255 : 0;
             }
 
-            VGA[i+(j*320)] = ((r & 0xE0) | ((g & 0xE0) >> 3) | ((b & 0xC0) >> 6));
+            imageMatrix[i][j].r =(r & 0xE0);
+            imageMatrix[i][j].g =((g & 0xE0) >> 3);
+            imageMatrix[i][j].b =((b & 0xC0) >> 6);
+        }
+    }
+
+    for (int i = 0; i < 320; i++)
+    {
+        for(int j = 0; j < h; j++)
+        {
+            VGA[i+(j*320)] = (imageMatrix[i][j].r | imageMatrix[i][j].g | imageMatrix[i][j].b);
         }
         
     }
@@ -168,7 +173,7 @@ int main()
 
         int activeSw = get_sw();
         updateTransform(activeSw);
-        moveImage(VGA, VGA_CTRL, activeSw);
+        moveImage(VGA, VGA_CTRL, activeSw, w, h, imageMatrix);
         
     }
 }

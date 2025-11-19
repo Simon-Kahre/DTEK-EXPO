@@ -1,7 +1,16 @@
-int speedX;
+typedef struct {
+    char r;
+    char g;
+    char b;
+} Pixel;
+
+extern void print(const char*);
+extern void print_dec(unsigned int);
+
+int speedX = 0;
 int offSetX = 0;
 
-int speedY;
+int speedY = 0;
 int offSetY = 0;
 
 int rotationSpeed = 0;
@@ -46,7 +55,7 @@ void updateRotation(unsigned int rotateRight, unsigned int rotateLeft)
     rotationSpeed = rotateRight - rotateLeft;
 }
 
-void moveImage(volatile char *VGA, volatile int *VGA_CTRL, int activeSw)
+void moveImage(char *VGA, volatile int *VGA_CTRL, int activeSw, int w, int h, volatile Pixel image[w][h])
 {
     offSetX = offSetX + speedX;
     offSetY = offSetY + speedY;
@@ -54,12 +63,32 @@ void moveImage(volatile char *VGA, volatile int *VGA_CTRL, int activeSw)
     {
         offSetX = 0;
     }
+    else if(offSetX > (w-320))
+    {
+        offSetX = (w-320);
+    }
+    
+    if(speedX != 0)
+    {
+        for(int i = 0; i < 320; i++)
+        {
+            for(int j = 0; j < h; j++)
+            {
+                VGA[i+(j*320)] = (image[i+offSetX][j].r | image[i+offSetX][j].g | image[i+offSetX][j].b);
+            }
+        }
+    }
+    
     if(offSetY < 0)
     {
         offSetY = 0;
     }
+    else if (offSetY > (h - 240))
+    {
+        offSetY = (h - 240);
+    }
 
-    *(VGA_CTRL+1) = (unsigned int) (VGA+offSetY * 320 + offSetX -(offSetX/10));
+    *(VGA_CTRL+1) = (unsigned int) (VGA+offSetY * 320);
     *(VGA_CTRL+0) = 0;
 
     
