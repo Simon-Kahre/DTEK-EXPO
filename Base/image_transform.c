@@ -13,7 +13,51 @@ int offSetX = 0;
 int speedY = 0;
 int offSetY = 0;
 
-int rotationSpeed = 0;
+float angleTheta = 0;
+float rotationChange[2];
+int imageHasChanged = 0;
+
+float cos(float angle)
+{
+    float numerator = angle * angle;
+    float total = 1;
+    float divisor = 2;
+    int sign = -1;
+
+    for(int i = 1; i <= 11; i++)
+    {
+        float sum = (numerator/divisor);
+        total += sign * sum;
+
+        numerator *= angle * angle;
+        divisor *= (2*i + 2);
+        divisor *= (2*i + 1);
+
+        sign = -sign;
+    }
+    return total;
+}
+
+float sin(float angle)
+{
+    float numerator = angle * angle * angle;
+    float total = angle;
+    float divisor = 6;
+    int sign = -1;
+
+    for(int i = 1; i <= 11; i++)
+    {
+        float sum = (numerator/divisor);
+        total += sign * sum;
+
+        numerator *= angle * angle;
+        divisor *= (2*i + 2);
+        divisor *= (2*i + 3);
+
+        sign = -sign;
+    }
+    return total;
+}
 
 void set_leds(int led_mask)
 {
@@ -35,6 +79,11 @@ void updateHorizontalSpeed(unsigned int moveRight, unsigned int moveLeft)
         moveLeft = 1;
     }
     speedX = moveRight - moveLeft;
+
+    if(moveLeft != 0 || moveRight != 0)
+    {
+        imageHasChanged = 1;
+    }
 }
 
 void updateVerticalSpeed(unsigned int moveUp, unsigned int moveDown, int activeSw)
@@ -50,9 +99,35 @@ void updateVerticalSpeed(unsigned int moveUp, unsigned int moveDown, int activeS
     speedY = moveUp - moveDown;
 }
 
-void updateRotation(unsigned int rotateRight, unsigned int rotateLeft)
+void updateRotation(int rotateRight, int rotateLeft)
 {
-    rotationSpeed = rotateRight - rotateLeft;
+    if(rotateLeft)
+    {
+        rotateLeft = 1;
+    }
+    if(rotateRight)
+    {
+        rotateRight = 1;
+    }
+    
+    angleTheta += (rotateLeft - rotateRight) * 0.03;
+
+    if(angleTheta < 0)
+    {
+        angleTheta = 6.28 - angleTheta;
+    }
+    else if(angleTheta > 6.28)
+    {
+        angleTheta = 0;
+    }
+
+    if(rotateLeft != 0 || rotateRight != 0)
+    {
+        imageHasChanged = 1;
+
+        rotationChange[0] = cos(angleTheta);
+        rotationChange[1] = sin(angleTheta);
+    }
 }
 
 void moveImage(char *VGA, volatile int *VGA_CTRL, int activeSw, int w, int h, volatile Pixel image[w][h])
@@ -68,13 +143,18 @@ void moveImage(char *VGA, volatile int *VGA_CTRL, int activeSw, int w, int h, vo
         offSetX = (w-320);
     }
     
-    if(speedX != 0)
+    if(imageHasChanged)
     {
+        imageHasChanged = 0;
         for(int i = 0; i < 320; i++)
         {
             for(int j = 0; j < h; j++)
             {
-                VGA[i+(j*320)] = (image[i+offSetX][j].r | image[i+offSetX][j].g | image[i+offSetX][j].b);
+                int rotChangeCosX = rotationChange[0] * (i - (w/2));
+                int rotChangeSinX = 0-(rotationChange[1] * (j - (h/2)));
+                int rotChangeCosY = rotationChange[0] * (j - (h/2));
+                int rotChangeSinY = rotationChange[1] * (i - (w/2));
+                VGA[i+(j*320)] = (image[(w/2)+offSetX + rotChangeCosX + rotChangeSinX][(h/2) + rotChangeCosY + rotChangeSinY].r | image[(w/2)+offSetX + rotChangeCosX + rotChangeSinX][(h/2) + rotChangeCosY + rotChangeSinY].g | image[(w/2)+offSetX + rotChangeCosX + rotChangeSinX][(h/2) + rotChangeCosY + rotChangeSinY].b);
             }
         }
     }
@@ -104,5 +184,5 @@ void updateTransform(int activeSw)
 {
     updateHorizontalSpeed(activeSw & 256, activeSw & 512);
     updateVerticalSpeed(activeSw & 128, activeSw & 64, activeSw);
-    
+    updateRotation((activeSw & 32), (activeSw & 16));
 }
