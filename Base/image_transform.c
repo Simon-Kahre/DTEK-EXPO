@@ -7,15 +7,15 @@ typedef struct {
 extern void print(const char*);
 extern void print_dec(unsigned int);
 
-int speedX = 0;
 int offSetX = 0;
 
-int speedY = 0;
 int offSetY = 0;
 
 float angleTheta = 0;
-float rotationChange[2];
+float rotationChange[2] = {1,0};
 int imageHasChanged = 0;
+
+float scalingFactor = 1;
 
 float cos(float angle)
 {
@@ -78,7 +78,7 @@ void updateHorizontalSpeed(unsigned int moveRight, unsigned int moveLeft)
     {
         moveLeft = 1;
     }
-    speedX = moveRight - moveLeft;
+    offSetX += (moveRight - moveLeft)*2;
 
     if(moveLeft != 0 || moveRight != 0)
     {
@@ -96,7 +96,7 @@ void updateVerticalSpeed(unsigned int moveUp, unsigned int moveDown, int activeS
     {
         moveDown = 1;
     }
-    speedY = moveUp - moveDown;
+    offSetY += (moveUp - moveDown)*2;
 }
 
 void updateRotation(int rotateRight, int rotateLeft)
@@ -130,31 +130,56 @@ void updateRotation(int rotateRight, int rotateLeft)
     }
 }
 
+void updateScaling(int zoomIn, int zoomOut)
+{
+    if(zoomIn)
+    {
+        zoomIn = 1;
+    }
+    if(zoomOut)
+    {
+        zoomOut = 1;
+    }
+
+    scalingFactor += (zoomIn - zoomOut) * 0.05;
+    if(zoomIn != 0 || zoomOut != 0)
+    {
+        imageHasChanged = 1;
+    }
+}
+
 void moveImage(char *VGA, volatile int *VGA_CTRL, int activeSw, int w, int h, volatile Pixel image[w][h])
 {
-    offSetX = offSetX + speedX;
-    offSetY = offSetY + speedY;
     if(offSetX < 0)
     {
         offSetX = 0;
     }
-    else if(offSetX > (w-320))
+    else if(offSetX > (w-320)/scalingFactor)
     {
-        offSetX = (w-320);
+        offSetX = (w-320)/scalingFactor;
     }
     
     if(imageHasChanged)
     {
         imageHasChanged = 0;
-        for(int i = 0; i < 320; i++)
+        for(int i = 0; i < 320; i += 1)
         {
-            for(int j = 0; j < h; j++)
+            for(int j = 0; j < h; j += 1)
             {
-                int rotChangeCosX = rotationChange[0] * (i - (w/2));
-                int rotChangeSinX = 0-(rotationChange[1] * (j - (h/2)));
-                int rotChangeCosY = rotationChange[0] * (j - (h/2));
-                int rotChangeSinY = rotationChange[1] * (i - (w/2));
-                VGA[i+(j*320)] = (image[(w/2)+offSetX + rotChangeCosX + rotChangeSinX][(h/2) + rotChangeCosY + rotChangeSinY].r | image[(w/2)+offSetX + rotChangeCosX + rotChangeSinX][(h/2) + rotChangeCosY + rotChangeSinY].g | image[(w/2)+offSetX + rotChangeCosX + rotChangeSinX][(h/2) + rotChangeCosY + rotChangeSinY].b);
+                    int rotChangeCosX = scalingFactor*rotationChange[0] * (i - (w/2));
+                    int rotChangeSinX = 0-(scalingFactor*rotationChange[1] * (j - (h/2)));
+                    int rotChangeCosY = scalingFactor*rotationChange[0] * (j - (h/2));
+                    int rotChangeSinY = scalingFactor*rotationChange[1] * (i - (w/2));
+
+                    if(j < (h/scalingFactor))
+                    {
+                        VGA[(i+((j)*320))] = (image[(int)(((w/2)+offSetX)*scalingFactor) + rotChangeCosX + rotChangeSinX][(int)((h/2)*scalingFactor) + rotChangeCosY + rotChangeSinY].r | image[(int)(((w/2)+offSetX)*scalingFactor) + rotChangeCosX + rotChangeSinX][(int)((h/2)*scalingFactor) + rotChangeCosY + rotChangeSinY].g | image[(int)(((w/2)+offSetX)*scalingFactor) + rotChangeCosX + rotChangeSinX][(int)((h/2)*scalingFactor) + rotChangeCosY + rotChangeSinY].b);
+                    }
+                    else
+                    {
+                        VGA[(i+((j)*320))] = (0 | 0 | 0);
+                    }
+                
             }
         }
     }
@@ -163,9 +188,9 @@ void moveImage(char *VGA, volatile int *VGA_CTRL, int activeSw, int w, int h, vo
     {
         offSetY = 0;
     }
-    else if (offSetY > (h - 240))
+    else if (offSetY > (h/scalingFactor - 240))
     {
-        offSetY = (h - 240);
+        offSetY = (h/scalingFactor - 240);
     }
 
     *(VGA_CTRL+1) = (unsigned int) (VGA+offSetY * 320);
@@ -185,4 +210,5 @@ void updateTransform(int activeSw)
     updateHorizontalSpeed(activeSw & 256, activeSw & 512);
     updateVerticalSpeed(activeSw & 128, activeSw & 64, activeSw);
     updateRotation((activeSw & 32), (activeSw & 16));
+    updateScaling(activeSw & 8, activeSw & 4);
 }
