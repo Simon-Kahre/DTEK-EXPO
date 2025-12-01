@@ -14,8 +14,8 @@ enum {
     UNSHARP_MASKING
 };
 
-static void applyKernel(int w, int h, Pixel src[w][h], Pixel dst[w][h], const double *k, int radius);
-void imageProcessing(int w, int h, Pixel src[w][h], Pixel dst[w][h], int option);
+static void applyKernel(int w, int h, volatile Pixel src[w][h], volatile Pixel dst[w][h], const double *k, int radius);
+void imageProcessing(int w, int h, volatile Pixel src[w][h], volatile Pixel dst[w][h], int option);
 
 const double ridgeDetection[3][3] =
 {
@@ -70,7 +70,7 @@ const double unsharpMasking[5][5] =
     {-1.0/256.0, -4.0/256.0, -6.0/256.0, -4.0/256.0, -1.0/256.0},
 };
 
-void imageProcessing(int w, int h, Pixel src[w][h], Pixel dst[w][h], int option){
+void imageProcessing(int w, int h, volatile Pixel src[w][h], volatile Pixel dst[w][h], int option){
     switch (option) {
         case RIDGE_DETECTION:
             applyKernel(w, h, src, dst, &ridgeDetection[0][0], 1);
@@ -109,7 +109,7 @@ static unsigned char clamp255(double v){
     return (unsigned char) v;
 }
 
-static void applyKernel(int w, int h, Pixel src[w][h], Pixel dst[w][h], const double *k, int radius){
+static void applyKernel(int w, int h, volatile Pixel src[w][h], volatile Pixel dst[w][h], const double *k, int radius){
     int size = 2 * radius + 1;
 
     for (int x = radius; x < w -radius; ++x){

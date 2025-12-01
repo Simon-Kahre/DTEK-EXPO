@@ -4,6 +4,7 @@ typedef struct {
     char b;
 } Pixel;
 
+extern void imageProcessing(int w, int h, volatile Pixel src[w][h], volatile Pixel dst[w][h], int option);
 extern void moveImage(volatile char *X,volatile int *Y, int sw, int w, int h, volatile Pixel I[w][h]);
 extern void updateTransform(int Switches);
 extern void print(const char*);
@@ -132,6 +133,7 @@ int main()
     volatile char *rawImage = skipPPMHeader(Image, &w, &h, &mv);
 
     volatile Pixel imageMatrix[w][h];
+    volatile Pixel processed[w][h];
 
     for (int i = 0; i < w; i++)
     {
@@ -157,7 +159,16 @@ int main()
             imageMatrix[i][j].b =((b & 0xC0) >> 6);
         }
     }
+    int option = 4;
 
+    imageProcessing(w, h, imageMatrix, processed, option);
+
+    for (int i = 0; i < w; i++){
+        for (int j = 0; j < h; j++){
+            imageMatrix[i][j] = processed[i][j];
+        }
+    }
+    
     for (int i = 0; i < 320; i++)
     {
         for(int j = 0; j < h; j++)
