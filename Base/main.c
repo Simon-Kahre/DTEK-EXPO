@@ -1,11 +1,11 @@
-typedef struct {
-    char r;
-    char g;
-    char b;
+typedef struct __attribute__((packed)) {
+    unsigned char r;
+    unsigned char g;
+    unsigned char b;
 } Pixel;
 
-extern void imageProcessing(int w, int h, volatile Pixel src[w][h], volatile Pixel dst[w][h], int option);
-extern void moveImage(volatile char *X,volatile int *Y, int sw, int w, int h, volatile Pixel I[w][h]);
+extern void imageProcessing(int w, int h,const Pixel src[h][w], Pixel dst[h][w], int option);
+extern void moveImage(volatile char *X,volatile int *Y, int sw, int w, int h, Pixel I[h][w]);
 extern void updateTransform(int Switches);
 extern void print(const char*);
 extern void print_dec(unsigned int);
@@ -13,7 +13,25 @@ extern const char Image[];
 
 
 
-
+char getColor(char pixel, char color)
+{
+    char value = 0;
+    switch (color)
+    {
+        case 0: //RED
+            value = pixel & 224;
+            break;
+        case 1: //GREEN
+            value = pixel & 28;
+            break;
+        case 2://BLUE
+            value = pixel & 3;
+            break;
+        default:
+            break;
+    }
+    return value;
+}
 
 
 // Aquires status of all the switches on the board
@@ -126,54 +144,63 @@ char* skipPPMHeader(const char *ppm, int *width, int *height, int *maxval)
     
 int main()
 {
+    print_dec(sizeof(Pixel));
     volatile char *VGA = (volatile char*) 0x08000000;
 
     int w,h,mv;
 
     volatile char *rawImage = skipPPMHeader(Image, &w, &h, &mv);
 
-    volatile Pixel imageMatrix[w][h];
-    volatile Pixel processed[w][h];
+    char imageMatrix[h][w];
+    //Pixel processed[h][w];
 
     for (int i = 0; i < w; i++)
     {
         for(int j = 0; j < h; j++)
         {
 
-            imageMatrix[i][j].r = rawImage[(j * w + i) * 3];
-            imageMatrix[i][j].g = rawImage[(j * w + i) * 3+1];
-            imageMatrix[i][j].b = rawImage[(j * w + i) * 3+2];
+            /*imageMatrix[j][i].r = rawImage[(j * w + i) * 3];
+            imageMatrix[j][i].g = rawImage[(j * w + i) * 3+1];
+            imageMatrix[j][i].b = rawImage[(j * w + i) * 3+2];
 
-            char r = imageMatrix[i][j].r;
-            char g = imageMatrix[i][j].g;
-            char b = imageMatrix[i][j].b;
+            unsigned char r = imageMatrix[j][i].r;
+            unsigned char g = imageMatrix[j][i].g;
+            unsigned char b = imageMatrix[j][i].b;*/
 
-            if (mv == 1) { // expand 0/1 to full 8-bit
+            unsigned char r = rawImage[(j * w + i) * 3];
+            unsigned char g = rawImage[(j * w + i) * 3+1];
+            unsigned char b = rawImage[(j * w + i) * 3+2];
+
+            if (mv == 1) 
+            { // expand 0/1 to full 8-bit
                 r = r ? 255 : 0;
                 g = g ? 255 : 0;
                 b = b ? 255 : 0;
             }
 
-            imageMatrix[i][j].r =(r & 0xE0);
-            imageMatrix[i][j].g =((g & 0xE0) >> 3);
-            imageMatrix[i][j].b =((b & 0xC0) >> 6);
+
+            /*imageMatrix[j][i].r =(r & 0xE0);
+            imageMatrix[j][i].g =((g & 0xE0) >> 3);
+            imageMatrix[j][i].b =((b & 0xC0) >> 6);*/
+
+            imageMatrix[j][i] =(r & 0xE0) + ((g & 0xE0) >> 3) + ((b & 0xC0) >> 6);
         }
     }
-    int option = 4;
+    char option = 10;
 
-    imageProcessing(w, h, imageMatrix, processed, option);
+    //imageProcessing(w, h, imageMatrix, processed, option);
 
-    for (int i = 0; i < w; i++){
+    /*for (int i = 0; i < w; i++){
         for (int j = 0; j < h; j++){
             imageMatrix[i][j] = processed[i][j];
         }
-    }
+    }*/
     
     for (int i = 0; i < 320; i++)
     {
         for(int j = 0; j < h; j++)
         {
-            VGA[i+(j*320)] = (imageMatrix[i][j].r | imageMatrix[i][j].g | imageMatrix[i][j].b);
+            VGA[i+(j*320)] = (getColor(imageMatrix[j][i], 0) | getColor(imageMatrix[j][i], 1) | getColor(imageMatrix[j][i], 2));
         }
         
     }
@@ -183,8 +210,8 @@ int main()
     {
 
         int activeSw = get_sw();
-        updateTransform(activeSw);
-        moveImage(VGA, VGA_CTRL, activeSw, w, h, imageMatrix);
+        //updateTransform(activeSw);
+        //moveImage(VGA, VGA_CTRL, activeSw, w, h, imageMatrix);
         
     }
 }
