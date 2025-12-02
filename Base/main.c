@@ -1,11 +1,5 @@
-typedef struct __attribute__((packed)) {
-    unsigned char r;
-    unsigned char g;
-    unsigned char b;
-} Pixel;
-
-extern void imageProcessing(int w, int h,const Pixel src[h][w], Pixel dst[h][w], int option);
-extern void moveImage(volatile char *X,volatile int *Y, int sw, int w, int h, Pixel I[h][w]);
+extern void imageProcessing(int w, int h,const char src[h][w], char dst[h][w], int option);
+extern void moveImage(volatile char *X,volatile int *Y, int sw, int w, int h, char I[h][w]);
 extern void updateTransform(int Switches);
 extern void print(const char*);
 extern void print_dec(unsigned int);
@@ -144,15 +138,14 @@ char* skipPPMHeader(const char *ppm, int *width, int *height, int *maxval)
     
 int main()
 {
-    print_dec(sizeof(Pixel));
     volatile char *VGA = (volatile char*) 0x08000000;
 
     int w,h,mv;
 
     volatile char *rawImage = skipPPMHeader(Image, &w, &h, &mv);
 
-    char imageMatrix[h][w];
-    //Pixel processed[h][w];
+    char imageMatrix[w][h];
+    char processed[w][h];
 
     for (int i = 0; i < w; i++)
     {
@@ -183,12 +176,12 @@ int main()
             imageMatrix[j][i].g =((g & 0xE0) >> 3);
             imageMatrix[j][i].b =((b & 0xC0) >> 6);*/
 
-            imageMatrix[j][i] =(r & 0xE0) + ((g & 0xE0) >> 3) + ((b & 0xC0) >> 6);
+            imageMatrix[i][j] =(r & 0xE0) + ((g & 0xE0) >> 3) + ((b & 0xC0) >> 6);
         }
     }
-    char option = 10;
+    char option = 4;
 
-    //imageProcessing(w, h, imageMatrix, processed, option);
+    imageProcessing(w, h, imageMatrix, processed, option);
 
     /*for (int i = 0; i < w; i++){
         for (int j = 0; j < h; j++){
@@ -200,7 +193,7 @@ int main()
     {
         for(int j = 0; j < h; j++)
         {
-            VGA[i+(j*320)] = (getColor(imageMatrix[j][i], 0) | getColor(imageMatrix[j][i], 1) | getColor(imageMatrix[j][i], 2));
+            VGA[i+(j*320)] = (getColor(imageMatrix[i][j], 0) | getColor(imageMatrix[i][j], 1) | getColor(imageMatrix[i][j], 2));
         }
         
     }
@@ -210,8 +203,8 @@ int main()
     {
 
         int activeSw = get_sw();
-        //updateTransform(activeSw);
-        //moveImage(VGA, VGA_CTRL, activeSw, w, h, imageMatrix);
+        updateTransform(activeSw);
+        moveImage(VGA, VGA_CTRL, activeSw, w, h, processed);
         
     }
 }

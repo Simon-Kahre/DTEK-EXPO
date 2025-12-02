@@ -1,11 +1,13 @@
-typedef struct {
-    char r;
-    char g;
-    char b;
+typedef struct __attribute__((packed)) {
+    unsigned char r;
+    unsigned char g;
+    unsigned char b;
 } Pixel;
+
 
 extern void print(const char*);
 extern void print_dec(unsigned int);
+extern char getColor(char p, char c);
 
 int offSetX = 0;
 
@@ -110,7 +112,11 @@ void updateRotation(int rotateRight, int rotateLeft)
         rotateRight = 1;
     }
     
-    angleTheta += (rotateLeft - rotateRight) * 0.03;
+    
+
+    if(rotateLeft != 0 || rotateRight != 0)
+    {
+        angleTheta += (rotateLeft - rotateRight) * 0.03;
 
     if(angleTheta < 0)
     {
@@ -121,8 +127,6 @@ void updateRotation(int rotateRight, int rotateLeft)
         angleTheta = 0;
     }
 
-    if(rotateLeft != 0 || rotateRight != 0)
-    {
         imageHasChanged = 1;
 
         rotationChange[0] = cos(angleTheta);
@@ -148,7 +152,7 @@ void updateScaling(int zoomIn, int zoomOut)
     }
 }
 
-void moveImage(char *VGA, volatile int *VGA_CTRL, int activeSw, int w, int h, volatile Pixel image[w][h])
+void moveImage(char *VGA, volatile int *VGA_CTRL, int activeSw, int w, int h,const char image[w][h])
 {
     if(offSetX < 0)
     {
@@ -166,14 +170,25 @@ void moveImage(char *VGA, volatile int *VGA_CTRL, int activeSw, int w, int h, vo
         {
             for(int j = 0; j < h; j += 1)
             {
-                    int rotChangeCosX = scalingFactor*rotationChange[0] * (i - (w/2));
+                
+                int x = (int)(((w/2)+offSetX)*scalingFactor) + scalingFactor * rotationChange[0] * (i - (w/2)) - (scalingFactor * rotationChange[1] * (j - (h/2)));
+                int y = (int)((h/2)*scalingFactor) + scalingFactor * rotationChange[0] * (j - (h/2)) + scalingFactor * rotationChange[1] * (i - (w/2));
+                //int x = (int)((((w/2)+i+offSetX))*scalingFactor + rotationChange[0] / scalingFactor * (i - (w/2)) - (rotationChange[1] / scalingFactor * (j - (h/2))));
+                //int y = (int)(((h/2)+j+rotationChange[0] * (j - (h/2)) + rotationChange[1] * (i - (w/2)))*scalingFactor);
+                //int x = (int)((i+offSetX)*scalingFactor) + scalingFactor * rotationChange[0] * (i - (w/2)) - (scalingFactor * rotationChange[1] * (j - (h/2)));
+                //int y = (int)(j*scalingFactor) + scalingFactor * rotationChange[0] * (j - (h/2)) + scalingFactor * rotationChange[1] * (i - (w/2));
+                    /*int rotChangeCosX = scalingFactor*rotationChange[0] * (i - (w/2));
                     int rotChangeSinX = 0-(scalingFactor*rotationChange[1] * (j - (h/2)));
                     int rotChangeCosY = scalingFactor*rotationChange[0] * (j - (h/2));
-                    int rotChangeSinY = scalingFactor*rotationChange[1] * (i - (w/2));
-
+                    int rotChangeSinY = scalingFactor*rotationChange[1] * (i - (w/2));*/
+//print_dec(image[(int)(((w/2)+offSetX)*scalingFactor) + rotChangeCosX + rotChangeSinX][(int)((h/2)*scalingFactor) + rotChangeCosY + rotChangeSinY].r);
+//print("\n");
                     if(j < (h/scalingFactor))
                     {
-                        VGA[(i+((j)*320))] = (image[(int)(((w/2)+offSetX)*scalingFactor) + rotChangeCosX + rotChangeSinX][(int)((h/2)*scalingFactor) + rotChangeCosY + rotChangeSinY].r | image[(int)(((w/2)+offSetX)*scalingFactor) + rotChangeCosX + rotChangeSinX][(int)((h/2)*scalingFactor) + rotChangeCosY + rotChangeSinY].g | image[(int)(((w/2)+offSetX)*scalingFactor) + rotChangeCosX + rotChangeSinX][(int)((h/2)*scalingFactor) + rotChangeCosY + rotChangeSinY].b);
+                        //VGA[(i+((j)*320))] = (image[x][y].r | image[(int)(((w/2)+offSetX)*scalingFactor) + rotChangeCosX + rotChangeSinX][(int)((h/2)*scalingFactor) + rotChangeCosY + rotChangeSinY].g | image[(int)(((w/2)+offSetX)*scalingFactor) + rotChangeCosX + rotChangeSinX][(int)((h/2)*scalingFactor) + rotChangeCosY + rotChangeSinY].b);
+                        VGA[(i+((j)*320))] = (getColor(image[x][y], 0) | getColor(image[x][y], 1) | getColor(image[x][y], 2));
+                        //VGA[i + j*320] = image[y][x].r | (image[y][x].g << 3) | (image[y][x].b);
+
                     }
                     else
                     {
