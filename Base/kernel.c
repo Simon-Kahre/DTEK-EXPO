@@ -1,9 +1,3 @@
-typedef struct {
-    char r;
-    char g;
-    char b;
-} Pixel;
-
 enum {
     RIDGE_DETECTION = 0,
     EDGE_DETECTION,
@@ -14,8 +8,9 @@ enum {
     UNSHARP_MASKING
 };
 
-static void applyKernel(int w, int h, volatile Pixel input[w][h], volatile Pixel output[w][h], const double *k, int radius);
-void imageProcessing(int w, int h, volatile Pixel input[w][h], volatile Pixel output[w][h], int option);
+static void applyKernel(int w, int h, volatile char input[w][h], volatile char output[w][h], const double *k, int radius);
+void imageProcessing(int w, int h, volatile char input[w][h], volatile char output[w][h], int option);
+extern char getColor(char pixel, char color);
 
 const double ridgeDetection[3][3] =
 {
@@ -70,7 +65,7 @@ const double unsharpMasking[5][5] =
     {-1.0/256.0, -4.0/256.0, -6.0/256.0, -4.0/256.0, -1.0/256.0},
 };
 
-void imageProcessing(int w, int h, volatile Pixel input[w][h], volatile Pixel output[w][h], int option){
+void imageProcessing(int w, int h, volatile char input[w][h], volatile char output[w][h], int option){
     switch (option) {
         case RIDGE_DETECTION:
             applyKernel(w, h, input, output, &ridgeDetection[0][0], 1);
@@ -115,7 +110,7 @@ static int clamp_int(int v, int max){
     return v;
 }
 
-static void applyKernel(int w, int h, volatile Pixel input[w][h], volatile Pixel output[w][h], const double *k, int radius){
+static void applyKernel(int w, int h, volatile char input[w][h], volatile char output[w][h], const double *k, int radius){
     int size = 2 * radius + 1;
 
     for (int x = 0; x < w; ++x){
@@ -131,16 +126,13 @@ static void applyKernel(int w, int h, volatile Pixel input[w][h], volatile Pixel
                     int sx = clamp_int(x+dx, w-1);
                     int sy = clamp_int(y+dy, h-1);
 
-                    Pixel p = input[sx][sy];
-                    R += c * (unsigned char)p.r;
-                    G += c * (unsigned char)p.g;
-                    B += c * (unsigned char)p.b;
+                    char p = input[sx][sy];
+                    R += c * getColor(p, 0);
+                    G += c * getColor(p, 1);
+                    B += c * getColor(p, 2);
                 }
             }
-
-            output[x][y].r = clamp255(R);
-            output[x][y].g = clamp255(G);
-            output[x][y].b = clamp255(B);
+            output[x][y] = (clamp255(R) | clamp255(G)| clamp255(B));
         }
     }
 }
