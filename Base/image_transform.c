@@ -81,7 +81,7 @@ void updateVerticalSpeed(unsigned int moveUp, unsigned int moveDown)
     {
         moveDown = 1;
     }
-    offSetY += (moveUp - moveDown)*2;
+    offSetY += (moveUp - moveDown);
 }
 
 void updateRotation(int rotateRight, int rotateLeft)
