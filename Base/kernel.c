@@ -71,30 +71,39 @@ void imageProcessing(int w, int h, volatile char input[w][h], volatile char outp
     print("Processing... ");
     switch (option) {
         case RIDGE_DETECTION:
+            print("RIDGE_DETECTION");
             applyKernel(w, h, input, output, &ridgeDetection[0][0], 1);
             break;
         case EDGE_DETECTION:
+            print("EDGE_DETECTION");
             applyKernel(w, h, input, output, &edgeDetection[0][0], 1);
             break;
         case SHARPEN:
+            print("SHARPEN");
             applyKernel(w, h, input, output, &sharpen[0][0], 1);
             break;
         case BOX_BLUR:
+            print("BOX_BLUR");
             applyKernel(w, h, input, output, &boxBlur[0][0], 1);
             break;
         case GAUSSIAN_BLUR3X3:
+            print("GAUSSIAN_BLUR3X3");
             applyKernel(w, h, input, output, &gaussianBlur3x3[0][0], 1);
             break;
         case GAUSSIAN_BLUR5X5:
+            print("GAUSSIAN_BLUR5X5");
             applyKernel(w, h, input, output, &gaussianBlur5x5[0][0], 2);
             break;
         case UNSHARP_MASKING:
+            print("UNSHARP_MASKING");
             applyKernel(w, h, input, output, &unsharpMasking[0][0], 2);
             break;
         case INVERTED:
+            print("INVERTED");
             inverted(w, h, input, output);
             break;
         default:
+            print("Default: no changes.");
             for (int x = 0; x < w; ++x){
                 for(int y = 0; y < h; ++y){
                     output[x][y] = input[x][y];
