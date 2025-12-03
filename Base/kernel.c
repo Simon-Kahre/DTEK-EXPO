@@ -13,6 +13,7 @@ static void applyKernel(int w, int h, volatile char input[w][h], volatile char o
 static void inverted(int w, int h, volatile char input[w][h], volatile char output[w][h]);
 void imageProcessing(int w, int h, volatile char input[w][h], volatile char output[w][h], int option);
 extern char getColor(char pixel, char color);
+extern void print(const char*);
 
 const double ridgeDetection[3][3] =
 {
@@ -71,39 +72,39 @@ void imageProcessing(int w, int h, volatile char input[w][h], volatile char outp
     print("Processing... ");
     switch (option) {
         case RIDGE_DETECTION:
-            print("RIDGE_DETECTION");
+            print("RIDGE_DETECTION ");
             applyKernel(w, h, input, output, &ridgeDetection[0][0], 1);
             break;
         case EDGE_DETECTION:
-            print("EDGE_DETECTION");
+            print("EDGE_DETECTION ");
             applyKernel(w, h, input, output, &edgeDetection[0][0], 1);
             break;
         case SHARPEN:
-            print("SHARPEN");
+            print("SHARPEN ");
             applyKernel(w, h, input, output, &sharpen[0][0], 1);
             break;
         case BOX_BLUR:
-            print("BOX_BLUR");
+            print("BOX_BLUR ");
             applyKernel(w, h, input, output, &boxBlur[0][0], 1);
             break;
         case GAUSSIAN_BLUR3X3:
-            print("GAUSSIAN_BLUR3X3");
+            print("GAUSSIAN_BLUR3X3 ");
             applyKernel(w, h, input, output, &gaussianBlur3x3[0][0], 1);
             break;
         case GAUSSIAN_BLUR5X5:
-            print("GAUSSIAN_BLUR5X5");
+            print("GAUSSIAN_BLUR5X5 ");
             applyKernel(w, h, input, output, &gaussianBlur5x5[0][0], 2);
             break;
         case UNSHARP_MASKING:
-            print("UNSHARP_MASKING");
+            print("UNSHARP_MASKING ");
             applyKernel(w, h, input, output, &unsharpMasking[0][0], 2);
             break;
         case INVERTED:
-            print("INVERTED");
+            print("INVERTED ");
             inverted(w, h, input, output);
             break;
         default:
-            print("Default: no changes.");
+            print("Default ");
             for (int x = 0; x < w; ++x){
                 for(int y = 0; y < h; ++y){
                     output[x][y] = input[x][y];
@@ -112,12 +113,6 @@ void imageProcessing(int w, int h, volatile char input[w][h], volatile char outp
             break;
     }
     print("Done!\n");
-}
-
-static unsigned char clamp255(double v){
-    if (v < 0.0) v = 0.0;
-    if (v > 255.0) v = 255.0;
-    return (unsigned char) v;
 }
 
 static int clamp_int(int v, int max){
@@ -148,7 +143,7 @@ static void applyKernel(int w, int h, volatile char input[w][h], volatile char o
                     B += c * getColor(p, 2);
                 }
             }
-            output[x][y] = (clamp255(R) | clamp255(G)| clamp255(B));
+            output[x][y] = (((unsigned char) R & 224) | ((unsigned char) G & 28) | ((unsigned char) B & 3));
         }
     }
 }
@@ -157,11 +152,11 @@ static void inverted(int w, int h, volatile char input[w][h], volatile char outp
     for (int x = 0; x < w; ++x){
         for (int y = 0; y < h; ++y){
             char p = input[x][y];
-            double R = 255.0 - getColor(p, 0);
-            double G = 255.0 - getColor(p, 1);
-            double B = 255.0 - getColor(p, 2);
+            double R = 224.0 - getColor(p, 0);
+            double G = 28.0 - getColor(p, 1);
+            double B = 3.0 - getColor(p, 2);
 
-            output[x][y] = (clamp255(R) | clamp255(G)| clamp255(B));
+            output[x][y] = (((unsigned char) R & 224) | ((unsigned char) G & 28) | ((unsigned char) B & 3));
         }
     }
 }

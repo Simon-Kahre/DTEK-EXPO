@@ -1,7 +1,7 @@
 extern void imageProcessing(int w, int h,const char input[h][w], char output[h][w], int option);
 extern void moveImage(volatile char *X,volatile int *Y, int sw, int w, int h, char I[h][w]);
 extern void updateTransform(int Switches);
-extern void print(const char*);
+
 extern void print_dec(unsigned int);
 extern const char Image[];
 extern void updateImage(int w, int h, volatile char* VGA, const char image[w][h]);
@@ -170,39 +170,64 @@ int main()
         int activeSw = get_sw();
         if(activeSw & 1)
         {
+            activeSw = activeSw & 1021;
             if(activeSw != pastSwStatus)
             {
-                if(activeSw & 512 && !(pastSwStatus & 512))
-                {                    
-                    imageProcessing(w, h, imageMatrix, processed, 0);
+                if(activeSw & 512)
+                {          
+                    if(!(pastSwStatus & 512))
+                    {          
+                        imageProcessing(w, h, imageMatrix, processed, 0);
+                    }
                 }
-                else if(activeSw & 256 && !(pastSwStatus & 256))
+                else if(activeSw & 256)
                 {
-                    imageProcessing(w, h, imageMatrix, processed, 1);
+                    if(!(pastSwStatus & 256))
+                    {          
+                        imageProcessing(w, h, imageMatrix, processed, 1);
+                    }
                 }
-                else if(activeSw & 128 && !(pastSwStatus & 128))
+                else if(activeSw & 128)
                 {
-                    imageProcessing(w, h, imageMatrix, processed, 2);
+                    if(!(pastSwStatus & 128))
+                    {          
+                        imageProcessing(w, h, imageMatrix, processed, 2);
+                    }
                 }
-                else if(activeSw & 64 && !(pastSwStatus & 64))
+                else if(activeSw & 64)
                 {
-                    imageProcessing(w, h, imageMatrix, processed, 3);
+                    if(!(pastSwStatus & 64))
+                    {          
+                        imageProcessing(w, h, imageMatrix, processed, 3);
+                    }
                 }
-                else if(activeSw & 32 && !(pastSwStatus & 32))
+                else if(activeSw & 32)
                 {
-                    imageProcessing(w, h, imageMatrix, processed, 4);
+                    if(!(pastSwStatus & 32))
+                    {          
+                        imageProcessing(w, h, imageMatrix, processed, 4);
+                    }
                 }
-                else if(activeSw & 16 && !(pastSwStatus & 16))
+                else if(activeSw & 16)
                 {
-                    imageProcessing(w, h, imageMatrix, processed, 5);
+                    if(!(pastSwStatus & 16))
+                    {          
+                        imageProcessing(w, h, imageMatrix, processed, 5);
+                    }
                 }
-                else if(activeSw & 8 && !(pastSwStatus & 8))
+                else if(activeSw & 8)
                 {
-                    imageProcessing(w, h, imageMatrix, processed, 6);
+                    if(!(pastSwStatus & 8))
+                    {          
+                        imageProcessing(w, h, imageMatrix, processed, 6);
+                    }
                 }
-                else if(activeSw & 4 && !(pastSwStatus & 4))
+                else if(activeSw & 4)
                 {
-                    imageProcessing(w, h, imageMatrix, processed, 7);
+                    if(!(pastSwStatus & 4))
+                    {          
+                        imageProcessing(w, h, imageMatrix, processed, 7);
+                    }
                 }
                 else
                 {
