@@ -1,8 +1,6 @@
 extern void imageProcessing(int w, int h,const char input[h][w], char output[h][w], int option);
 extern void moveImage(volatile char *X,volatile int *Y, int sw, int w, int h, char I[h][w]);
 extern void updateTransform(int Switches);
-
-extern void print_dec(unsigned int);
 extern const char Image[];
 extern void updateImage(int w, int h, volatile char* VGA, const char image[w][h]);
 
