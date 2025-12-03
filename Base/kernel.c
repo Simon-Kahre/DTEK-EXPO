@@ -5,10 +5,12 @@ enum {
     BOX_BLUR,
     GAUSSIAN_BLUR3X3,
     GAUSSIAN_BLUR5X5,
-    UNSHARP_MASKING
+    UNSHARP_MASKING,
+    INVERTED
 };
 
 static void applyKernel(int w, int h, volatile char input[w][h], volatile char output[w][h], const double *k, int radius);
+static void inverted(int w, int h, volatile char input[w][h], volatile char output[w][h]);
 void imageProcessing(int w, int h, volatile char input[w][h], volatile char output[w][h], int option);
 extern char getColor(char pixel, char color);
 
@@ -66,6 +68,7 @@ const double unsharpMasking[5][5] =
 };
 
 void imageProcessing(int w, int h, volatile char input[w][h], volatile char output[w][h], int option){
+    print("Processing... ");
     switch (option) {
         case RIDGE_DETECTION:
             applyKernel(w, h, input, output, &ridgeDetection[0][0], 1);
@@ -88,6 +91,9 @@ void imageProcessing(int w, int h, volatile char input[w][h], volatile char outp
         case UNSHARP_MASKING:
             applyKernel(w, h, input, output, &unsharpMasking[0][0], 2);
             break;
+        case INVERTED:
+            inverted(w, h, input, output);
+            break;
         default:
             for (int x = 0; x < w; ++x){
                 for(int y = 0; y < h; ++y){
@@ -96,6 +102,7 @@ void imageProcessing(int w, int h, volatile char input[w][h], volatile char outp
             } 
             break;
     }
+    print("Done!\n");
 }
 
 static unsigned char clamp255(double v){
@@ -132,6 +139,19 @@ static void applyKernel(int w, int h, volatile char input[w][h], volatile char o
                     B += c * getColor(p, 2);
                 }
             }
+            output[x][y] = (clamp255(R) | clamp255(G)| clamp255(B));
+        }
+    }
+}
+
+static void inverted(int w, int h, volatile char input[w][h], volatile char output[w][h]){
+    for (int x = 0; x < w; ++x){
+        for (int y = 0; y < h; ++y){
+            char p = input[x][y];
+            double R = 255.0 - getColor(p, 0);
+            double G = 255.0 - getColor(p, 1);
+            double B = 255.0 - getColor(p, 2);
+
             output[x][y] = (clamp255(R) | clamp255(G)| clamp255(B));
         }
     }

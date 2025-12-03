@@ -1,4 +1,4 @@
-extern void imageProcessing(int w, int h,const char src[h][w], char dst[h][w], int option);
+extern void imageProcessing(int w, int h,const char input[h][w], char output[h][w], int option);
 extern void moveImage(volatile char *X,volatile int *Y, int sw, int w, int h, char I[h][w]);
 extern void updateTransform(int Switches);
 extern void print(const char*);
@@ -174,51 +174,39 @@ int main()
             {
                 if(activeSw & 512 && !(pastSwStatus & 512))
                 {                    
-                    print("Processing... ");
                     imageProcessing(w, h, imageMatrix, processed, 0);
-                    print("Done!\n");
                 }
                 else if(activeSw & 256 && !(pastSwStatus & 256))
                 {
-                    print("Processing... ");
                     imageProcessing(w, h, imageMatrix, processed, 1);
-                    print("Done!\n");
                 }
                 else if(activeSw & 128 && !(pastSwStatus & 128))
                 {
-                    print("Processing... ");
                     imageProcessing(w, h, imageMatrix, processed, 2);
-                    print("Done!\n");
                 }
                 else if(activeSw & 64 && !(pastSwStatus & 64))
                 {
-                    print("Processing... ");
                     imageProcessing(w, h, imageMatrix, processed, 3);
-                    print("Done!\n");
                 }
                 else if(activeSw & 32 && !(pastSwStatus & 32))
                 {
-                    print("Processing... ");
                     imageProcessing(w, h, imageMatrix, processed, 4);
-                    print("Done!\n");
                 }
                 else if(activeSw & 16 && !(pastSwStatus & 16))
                 {
-                    print("Processing... ");
                     imageProcessing(w, h, imageMatrix, processed, 5);
-                    print("Done!\n");
                 }
                 else if(activeSw & 8 && !(pastSwStatus & 8))
                 {
-                    print("Processing... ");
                     imageProcessing(w, h, imageMatrix, processed, 6);
-                    print("Done!\n");
+                }
+                else if(activeSw & 4 && !(pastSwStatus & 4))
+                {
+                    imageProcessing(w, h, imageMatrix, processed, 7);
                 }
                 else
                 {
-                    print("Processing... ");
                     imageProcessing(w, h, imageMatrix, processed, 10);
-                    print("Done!\n");
                 }
                 pastSwStatus = activeSw;
                 updateImage(w, h, VGA, processed);
