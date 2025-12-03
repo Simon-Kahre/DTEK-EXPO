@@ -1,14 +1,4 @@
-enum {
-    RIDGE_DETECTION = 0,
-    EDGE_DETECTION,
-    SHARPEN,
-    BOX_BLUR,
-    GAUSSIAN_BLUR3X3,
-    GAUSSIAN_BLUR5X5,
-    UNSHARP_MASKING,
-    INVERTED
-};
-
+#include "kernel.h"
 static void applyKernel(int w, int h, volatile char input[w][h], volatile char output[w][h], const double *k, int radius);
 static void inverted(int w, int h, volatile char input[w][h], volatile char output[w][h]);
 void imageProcessing(int w, int h, volatile char input[w][h], volatile char output[w][h], int option);

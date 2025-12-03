@@ -1,0 +1,15 @@
+#ifndef KERNEL_H
+#define KERNEL_H
+
+enum {
+    RIDGE_DETECTION = 0,
+    EDGE_DETECTION,
+    SHARPEN,
+    BOX_BLUR,
+    GAUSSIAN_BLUR3X3,
+    GAUSSIAN_BLUR5X5,
+    UNSHARP_MASKING,
+    INVERTED
+};
+
+#endif

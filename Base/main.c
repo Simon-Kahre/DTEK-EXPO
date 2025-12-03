@@ -1,3 +1,4 @@
+#include "kernel.h"
 extern void imageProcessing(int w, int h,const char input[h][w], char output[h][w], int option);
 extern void moveImage(volatile char *X,volatile int *Y, int sw, int w, int h, char I[h][w]);
 extern void updateTransform(int Switches);
@@ -175,56 +176,56 @@ int main()
                 {          
                     if(!(pastSwStatus & 512))
                     {          
-                        imageProcessing(w, h, imageMatrix, processed, 0);
+                        imageProcessing(w, h, imageMatrix, processed, RIDGE_DETECTION);
                     }
                 }
                 else if(activeSw & 256)
                 {
                     if(!(pastSwStatus & 256))
                     {          
-                        imageProcessing(w, h, imageMatrix, processed, 1);
+                        imageProcessing(w, h, imageMatrix, processed, EDGE_DETECTION);
                     }
                 }
                 else if(activeSw & 128)
                 {
                     if(!(pastSwStatus & 128))
                     {          
-                        imageProcessing(w, h, imageMatrix, processed, 2);
+                        imageProcessing(w, h, imageMatrix, processed, SHARPEN);
                     }
                 }
                 else if(activeSw & 64)
                 {
                     if(!(pastSwStatus & 64))
                     {          
-                        imageProcessing(w, h, imageMatrix, processed, 3);
+                        imageProcessing(w, h, imageMatrix, processed, BOX_BLUR);
                     }
                 }
                 else if(activeSw & 32)
                 {
                     if(!(pastSwStatus & 32))
                     {          
-                        imageProcessing(w, h, imageMatrix, processed, 4);
+                        imageProcessing(w, h, imageMatrix, processed, GAUSSIAN_BLUR3X3);
                     }
                 }
                 else if(activeSw & 16)
                 {
                     if(!(pastSwStatus & 16))
                     {          
-                        imageProcessing(w, h, imageMatrix, processed, 5);
+                        imageProcessing(w, h, imageMatrix, processed, GAUSSIAN_BLUR5X5);
                     }
                 }
                 else if(activeSw & 8)
                 {
                     if(!(pastSwStatus & 8))
                     {          
-                        imageProcessing(w, h, imageMatrix, processed, 6);
+                        imageProcessing(w, h, imageMatrix, processed, UNSHARP_MASKING);
                     }
                 }
                 else if(activeSw & 4)
                 {
                     if(!(pastSwStatus & 4))
                     {          
-                        imageProcessing(w, h, imageMatrix, processed, 7);
+                        imageProcessing(w, h, imageMatrix, processed, INVERTED);
                     }
                 }
                 else
