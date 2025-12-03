@@ -1,4 +1,3 @@
-extern void print(const char*);
 extern char getColor(char p, char c);
 
 int offSetX = 0;
