@@ -1,3 +1,9 @@
+/*
+* main.c
+* Authors: Simon kåhre, Leo Ehrenberg
+* Date: 07-12-2025
+*/
+
 #include "kernel.h"
 extern void imageProcessing(int w, int h,const char input[h][w], char output[h][w], int option);
 extern void moveImage(volatile char *X,volatile int *Y, int sw, int w, int h, char I[h][w]);

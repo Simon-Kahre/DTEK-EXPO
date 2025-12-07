@@ -1,3 +1,9 @@
+/*
+* kernel.c
+* Authors: Simon kåhre, Leo Ehrenberg
+* Date: 07-12-2025
+*/
+
 #include "kernel.h"
 static void applyKernel(int w, int h, volatile char input[w][h], volatile char output[w][h], const double *k, int radius);
 static void inverted(int w, int h, volatile char input[w][h], volatile char output[w][h]);

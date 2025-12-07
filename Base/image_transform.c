@@ -1,3 +1,9 @@
+/*
+* image_transform.c
+* Authors: Simon kåhre, Leo Ehrenberg
+* Date: 07-12-2025
+*/
+
 extern char getColor(char p, char c);
 
 // Saved offset in on the x- and y-axis for the image
