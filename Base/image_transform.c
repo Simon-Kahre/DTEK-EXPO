@@ -1,6 +1,6 @@
 /*
 * image_transform.c
-* Authors: Simon kåhre, Leo Ehrenberg
+* Authors: Simon kåhre
 * Date: 07-12-2025
 */
 

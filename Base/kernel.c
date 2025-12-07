@@ -1,6 +1,6 @@
 /*
 * kernel.c
-* Authors: Simon kåhre, Leo Ehrenberg
+* Authors: Leo Ehrenberg
 * Date: 07-12-2025
 */
 
